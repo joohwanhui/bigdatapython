@@ -1,55 +1,57 @@
 import requests
 from bs4 import BeautifulSoup
 
-def scrape_rotten_tomatoes_top10():
-    url = "https://www.rottentomatoes.com/"
+def get_watcha_daily_popular_movies():
+    """
+    왓챠 웹페이지(또는 왓챠피디아 메인/랭킹 페이지)에서
+    일간 영화 인기 순위를 가져오려 시도하는 예시 코드입니다.
     
+    실제 URL, 클래스명, 태그 구조는 달라질 수 있으므로,
+    개발자 도구(F12)로 확인 후 수정하세요.
+    """
+    # (예시) 왓챠피디아 메인 페이지를 대상으로 함
+    url = "https://pedia.watcha.com/ko-KR"
+
     try:
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("페이지 요청 중 에러 발생:", e)
+        print("페이지 요청 중 오류가 발생했습니다:", e)
         return []
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    #───────────────────────────────────────────────────────────
-    # (예시) 메인 페이지 내에서 'Top Box Office' 섹션을 찾아
-    # 영화 제목 10개를 가져온다고 가정. 실제 구조는 달라질 수 있음.
-    # 개발자 도구로 해당 영역의 class나 태그를 먼저 확인해야 합니다.
-    #───────────────────────────────────────────────────────────
+    # HTML 구조 예시 (실제로는 달라질 수 있음):
+    # <section class="chart-item" ...> 안에
+    # 1위부터 N위까지 리스트가 존재한다고 가정
 
-    # 예: <section id="Top-Box-Office" ...> 같은 요소가 있을 수 있음
-    # 실제로는 class나 id가 다를 수 있으므로 개발자 도구로 확인 필수
-    box_office_section = soup.find("section", id="Top-Box-Office")  
-    if not box_office_section:
-        print("Top-Box-Office 섹션을 찾지 못했습니다. HTML 구조가 달라졌을 수 있습니다.")
+    ranking_section = soup.find("section", class_="chart-item")
+    if not ranking_section:
+        print("일간 영화 인기 순위 섹션을 찾지 못했습니다. HTML 구조를 확인하세요.")
         return []
 
-    # 이후, 섹션 안에 있는 영화 목록 항목들(예: li, div 등)을 찾아서 10개만 추출
-    movie_items = box_office_section.find_all("li", limit=10)
+    # (가정) ranking_section 안에 영화 리스트 <li> 태그들이 있다고 가정
+    movie_items = ranking_section.find_all("li", limit=10)
     
     results = []
     for idx, item in enumerate(movie_items, start=1):
-        # 영화 제목이 들어 있는 태그를 찾아 get_text(). 
-        # 예: <a> 태그 안에 movieTitle 이 있다고 가정.
-        # 실제 구조는 확인 후 수정해야 합니다.
-        title_tag = item.find("a", class_="movieTitle")  
+        # 예: 제목이 <a class="movie-title">에 들어 있다고 가정
+        title_tag = item.find("a", class_="movie-title")
         if title_tag:
-            title = title_tag.get_text(strip=True)
+            movie_title = title_tag.get_text(strip=True)
         else:
-            # 만약 해당 태그가 없다면, 다른 태그를 찾거나 기본값 설정
-            title = "제목 정보 없음"
+            movie_title = "영화 제목 확인 불가"
         
-        results.append((idx, title))
+        results.append((idx, movie_title))
 
     return results
 
 if __name__ == "__main__":
-    top10_movies = scrape_rotten_tomatoes_top10()
+    top10_movies = get_watcha_daily_popular_movies()
+    
     if not top10_movies:
         print("데이터를 가져오지 못했습니다.")
     else:
-        print("로튼토마토 영화 순위 (예시) TOP 10")
-        for rank, movie_title in top10_movies:
-            print(f"{rank}위: {movie_title}")
+        print("왓챠 일간 인기 영화 TOP 10 (예시)")
+        for rank, title in top10_movies:
+            print(f"{rank}위: {title}")
