@@ -31,8 +31,8 @@ elif n==3 :
 elif n==4 : 
     print("aisong")
 elif n==5 :
-    artist_name=input("가수이름입력:" )
-    print(f"{artist_name} 의 노래")
+    artist=input("가수이름입력:" )
+    print(f"{artist} 의 노래")
 #멜론 50 출력
 #...
 #5를 입력하면 가수 이름 검색할 수 있게 입력창이 또 나와야함
