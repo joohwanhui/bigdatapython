@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import random
 
 def get_melon_chart(url, headers):
-    """멜론 차트 정보를 스크래핑하는 함수"""
+  #멜론 차트 정보를 스크래핑하는 함수
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -23,7 +23,7 @@ def get_melon_chart(url, headers):
         return None
 
 def print_chart(songs, limit=100):
-    """멜론 차트 정보를 출력하는 함수"""
+   #멜론 차트 정보를 출력하는 함수
     if songs:
         for song in songs[:limit]:
             print(f"{song[0]}. {song[1]} - {song[2]}")
@@ -31,7 +31,7 @@ def print_chart(songs, limit=100):
         print("차트 정보를 가져올 수 없습니다.")
 
 def recommend_song(songs):
-    """AI 추천곡을 출력하는 함수"""
+    #AI 추천곡을 출력하는 함수
     if songs:
         ai_song = random.choice(songs)
         print(f"추천곡은 {ai_song[1]} - {ai_song[2]} 입니다.")
@@ -39,7 +39,7 @@ def recommend_song(songs):
         print("추천할 곡이 없습니다.")
 
 def search_artist(songs, artist_name):
-    """가수 이름으로 노래를 검색하는 함수"""
+    #가수 이름으로 노래를 검색하는 함수
     if songs:
         found_songs = [song for song in songs if artist_name in song[2]]
         if found_songs:
@@ -79,4 +79,4 @@ if __name__ == "__main__":
         artist_name = input("가수 이름 입력: ")
         search_artist(songs, artist_name)
     else:
-        print("잘못된 입력입니다. 다시 입력해주세요.")
+        print("1~5까지의 숫자를 입력해 주세요.")
