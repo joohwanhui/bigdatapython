@@ -27,14 +27,17 @@ for entry in soup.select('tr.lst50, tr.lst100'):  # 상위 50위 및 100위 목�
     artist = entry.select_one('div.ellipsis.rank02 a').get_text()
     songs.append((rank, title, artist))
 
-# 수집한 데이터를 출력합니다.
-for song in songs:
-      print(f"{song[0]}. {song[1]} - {song[2]}")
+    for song in songs :
+     ({song})
 
+print("ai야 노래 한곡만 추천해줘")
+print("""알겠습니다. 
+      제가 열심히 분석해서 고객님께 
+      노래를 한곡 추천합니다""")
 
-# 멜론 차트 100 중에서 노래 한곡 추천 해주는 서비스 만들기
+#여기서 AI가 돌아야죠
 ai_song = random.choice(songs)
-print(f"추천곡은 {ai_song[1]} - {ai_song[2]} 입니다.") 
-# 수집한 데이터를 출력합니다.
-for song in songs:
-     (f"{song[0]}. {song[1]} - {song[2]}")
+dd = ["두","두","두","두둥"]
+for d in dd : 
+    print(d)
+print(f"두두두두두두둥 제가 추천한곡은 {ai_song}입니다.")
