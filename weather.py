@@ -1,43 +1,50 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 
-# 예시 지역: 서울특별시 (좌표에 따라 변경 가능)
-def get_weather_rss(nx=60, ny=127):
-    base_url = "https://www.kma.go.kr/wid/queryDFS.jsp"
-    params = {
-        "gridx": nx,  # 서울 기준 x
-        "gridy": ny   # 서울 기준 y
-    }
+def fetch_and_classify_weather(nx=60, ny=127):
+    """
+    - nx, ny: 기상청 그리드 좌표 (기본값은 서울)
+    - 반환: {day_offset: "맑음" or "비옴"}
+    """
+    # 1) RSS 조회
+    url = "https://www.kma.go.kr/wid/queryDFS.jsp"
+    resp = requests.get(url, params={"gridx": nx, "gridy": ny})
+    resp.encoding = 'utf-8'
+    resp.raise_for_status()
 
-    response = requests.get(base_url, params=params)
-    response.encoding = 'utf-8'
+    # 2) 파싱
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    data_nodes = soup.find_all('data')
 
-    if response.status_code != 200:
-        print("날씨 정보를 가져오는데 실패했습니다.")
-        return
+    # 3) 일별 강수확률 최대값 수집
+    pops_by_day = defaultdict(int)
+    for node in data_nodes:
+        day_off = int(node.find('day').text)  # 0: 오늘, 1: 내일, ...
+        pop = int(node.find('pop').text)      # 강수확률
+        # 7일치만
+        if 0 <= day_off < 7:
+            pops_by_day[day_off] = max(pops_by_day[day_off], pop)
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    data = soup.find_all('data')
+    # 4) 분류
+    result = {}
+    for d in range(7):
+        result[d] = "비옴" if pops_by_day.get(d, 0) >= 60 else "맑음"
 
-    print("📅 7일간의 날씨 예보")
-    print("지역 좌표 (x={}, y={})".format(nx, ny))
-    print("="*40)
+    return result
 
-    for item in data:
-        hour = item.find("hour").text
-        day = int(item.find("day").text)
-        temp = item.find("temp").text
-        sky = item.find("wfKor").text
-        pty = item.find("pty").text
-        pop = item.find("pop").text
+def print_weekly_forecast(nx=60, ny=127):
+    today = datetime.now().date()
+    weather = fetch_and_classify_weather(nx, ny)
 
-        forecast_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        forecast_time = forecast_time.replace(day=forecast_time.day + day)
+    print("🗓 오늘부터 7일간 날씨 (맑음/비옴)")
+    print("-" * 30)
+    for offset, status in weather.items():
+        date = today + timedelta(days=offset)
+        print(f"{date} ({offset}일차): {status}")
+    print("-" * 30)
 
-        print(f"🕓 시간: {hour}시 / 날짜: {forecast_time.strftime('%Y-%m-%d')}")
-        print(f"🌡 기온: {temp}℃ / 🌤 상태: {sky} / ☔ 강수확률: {pop}%")
-        print("-"*40)
-
-# 실행
-get_weather_rss()
+if __name__ == "__main__":
+    # 서울(60,127) 기준. 다른 지역은 좌표만 바꿔주세요.
+    print_weekly_forecast()
